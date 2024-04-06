@@ -5,8 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-
-import androidx.core.content.ContextCompat;
+import android.os.Build;
 
 public class AudioBecomingNoisyReceiver extends BroadcastReceiver {
 
@@ -27,7 +26,18 @@ public class AudioBecomingNoisyReceiver extends BroadcastReceiver {
     public void setListener(BecomingNoisyListener listener) {
         this.listener = listener;
         IntentFilter intentFilter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-        ContextCompat.registerReceiver(context, this, intentFilter, ContextCompat.RECEIVER_NOT_EXPORTED);
+        compatRegisterReceiver(this.context, this, intentFilter, true);
+    }
+
+    private void compatRegisterReceiver(
+            Context context, BroadcastReceiver receiver, IntentFilter filter, boolean exported) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+                && context.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            context.registerReceiver(
+                    receiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            context.registerReceiver(receiver, filter);
+        }
     }
 
     public void removeListener() {
